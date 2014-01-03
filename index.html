@@ -29,19 +29,19 @@
         varying vec3 vNormal;
 
         void main() {
-            vec3 light = vec3(1.0, 1.0, 1.0);
+            vec3 light = vec3(0.0, 1.0, 0.0);
             light = normalize(light);
             float dotProduct = max(0.0, dot(vNormal, light));
 
-            // light = vec3(1.0, 0.0, 0.0);
-            // light = normalize(light);
-            // float dotProduct2 = max(0.0, dot(vNormal, light));
+            light = vec3(1.0, 0.0, 0.0);
+            light = normalize(light);
+            float dotProduct2 = max(0.0, dot(vNormal, light));
 
-            // light = vec3(0.0, 0.0, 1.0);
-            // light = normalize(light);
-            // float dotProduct3 = max(0.0, dot(vNormal, light));
+            light = vec3(0.0, 0.0, 1.0);
+            light = normalize(light);
+            float dotProduct3 = max(0.0, dot(vNormal, light));
 
-            gl_FragColor = vec4(dotProduct, dotProduct, dotProduct, 1.0);
+            gl_FragColor = vec4(dotProduct, dotProduct2, dotProduct3, 1.0);
         }
     
     </script>
@@ -73,15 +73,15 @@
             rings = 16,
             sphere = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings), sphereMaterial),
             cube = new THREE.Mesh(new THREE.CubeGeometry(radius, radius, radius), cubeMaterial),
-            shadedSphere = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings), shaderMaterial);
+            shadedCube = new THREE.Mesh(new THREE.CubeGeometry(radius, radius, radius), shaderMaterial);
 
         sphere.position.set(50, 0, 0)
         cube.position.set(-50, 0, 0);
         cube.rotation.x = 2.0;
 
-        shadedSphere.position.set(-15, 70, 0);
-        shadedSphere.rotation.x = 2.0;
-        shadedSphere.rotation.y = 25.0;
+        shadedCube.position.set(-15, 70, 0);
+        shadedCube.rotation.x = 2.0;
+        shadedCube.rotation.y = 25.0;
 
         var pointLight = new THREE.PointLight(0xFFFFFF);
         pointLight.position.x = 10;
@@ -127,7 +127,7 @@
 
             scene.remove(sphere);
             scene.remove(cube);
-            scene.remove(shadedSphere);
+            scene.remove(shadedCube);
 
             // scene.remove(moveablePointLight);
             
@@ -139,11 +139,11 @@
 
             cube.rotation.y -= 0.025;
             sphere.rotation.x += 0.025;
-            shadedSphere.rotation.x += 0.01;
+            shadedCube.rotation.x += 0.01;
 
             scene.add(sphere);
             scene.add(cube);
-            scene.add(shadedSphere);
+            scene.add(shadedCube);
             scene.add(camera);
 
             renderer.render(scene, camera);
