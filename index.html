@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Yeah!</title>
+    <script type="text/javascript" src="three.js"></script>
+</head>
+<body>
+    <div id="container"></div>
+    <script type="x-shader/x-vertex" id="vertexShader">
+        #ifdef GL_ES
+        precision highp float;
+        #endif
+
+        varying vec3 vNormal;
+
+        void main() {
+            vNormal = normal;
+
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+        
+    </script>
+    
+    <script type="x-shader/x-fragment" id="fragmentShader">
+        #ifdef GL_ES
+        precision highp float;
+        #endif
+
+        varying vec3 vNormal;
+
+        void main() {
+            vec3 light = vec3(1.0, 1.0, 1.0);
+            light = normalize(light);
+            float dotProduct = max(0.0, dot(vNormal, light));
+
+            // light = vec3(1.0, 0.0, 0.0);
+            // light = normalize(light);
+            // float dotProduct2 = max(0.0, dot(vNormal, light));
+
+            // light = vec3(0.0, 0.0, 1.0);
+            // light = normalize(light);
+            // float dotProduct3 = max(0.0, dot(vNormal, light));
+
+            gl_FragColor = vec4(dotProduct, dotProduct, dotProduct, 1.0);
+        }
+    
+    </script>
+    <script type="text/javascript" id="display-logic">
+        var WIDTH = 1000,
+            HEIGHT = 600;
+            VIEW_ANGLE = 45,
+            ASPECT_RATIO = WIDTH / HEIGHT,
+            NEAR = 0.1,
+            FAR = 10000;
+
+        var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT_RATIO, NEAR, FAR);
+        var scene = new THREE.Scene();
+
+        camera.position.z = 300;
+
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize(WIDTH, HEIGHT);
+
+        var sphereMaterial = new THREE.MeshPhongMaterial({ color: 0x0000CC }),
+            cubeMaterial = new THREE.MeshPhongMaterial({color: 0x00CC00}),
+            shaderMaterial = new THREE.ShaderMaterial({
+                vertexShader: document.getElementById('vertexShader').textContent,
+                fragmentShader: document.getElementById('fragmentShader').textContent
+            });
+
+        var radius = 50,
+            segments = 16,
+            rings = 16,
+            sphere = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings), sphereMaterial),
+            cube = new THREE.Mesh(new THREE.CubeGeometry(radius, radius, radius), cubeMaterial),
+            shadedSphere = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings), shaderMaterial);
+
+        sphere.position.set(50, 0, 0)
+        cube.position.set(-50, 0, 0);
+        cube.rotation.x = 2.0;
+
+        shadedSphere.position.set(-15, 70, 0);
+        shadedSphere.rotation.x = 2.0;
+        shadedSphere.rotation.y = 25.0;
+
+        var pointLight = new THREE.PointLight(0xFFFFFF);
+        pointLight.position.x = 10;
+        pointLight.position.y = 50;
+        pointLight.position.z = 130;
+
+        scene.add(pointLight);
+
+        //var renderModel = new THREE.RenderPass(scene, camera);
+        //var effectBloom = new THREE.BloomPass(1.3);
+
+        //var composer = new THREE.EffectComposer(renderer);
+
+        //composer.addPass(renderModel);
+        //composer.addPass(effectBloom);
+
+        // /composer.render();
+        var i = 0,
+            moveablePointLight = new THREE.PointLight(0xFFFFFF);
+
+        //scene.add(new THREE.AmbientLight(0x0000CC));
+
+        var directionLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionLight.position.set(0, 1, 100);
+        scene.add(directionLight);
+
+        // var spotLight = new THREE.SpotLight(0xffffff);
+        // spotLight.position.set(100, 1000, 100);
+
+        // spotLight.castShadow = true;
+
+        // spotLight.shadowMapWidth = 1024;
+        // spotLight.shadowMapHeight = 1024;
+
+        // spotLight.shadowCameraNear = 500;
+        // spotLight.shadowCameraFar = 4000;
+        // spotLight.shadowCameraFov = 30;
+
+        // scene.add( spotLight );
+
+        var render = function() {
+            requestAnimationFrame(render);
+
+            scene.remove(sphere);
+            scene.remove(cube);
+            scene.remove(shadedSphere);
+
+            // scene.remove(moveablePointLight);
+            
+            // moveablePointLight.position.x = i;
+            // moveablePointLight.position.y = 50;
+            // moveablePointLight.position.z = 1530;
+
+            // scene.add(moveablePointLight);
+
+            cube.rotation.y -= 0.025;
+            sphere.rotation.x += 0.025;
+            shadedSphere.rotation.x += 0.01;
+
+            scene.add(sphere);
+            scene.add(cube);
+            scene.add(shadedSphere);
+            scene.add(camera);
+
+            renderer.render(scene, camera);
+
+            i += 100;
+            if (i > 8000) {
+                i = 0;
+            }
+        };
+
+        render();
+        document.getElementById('container').appendChild(renderer.domElement);
+    </script>
+</body>
+</html>
