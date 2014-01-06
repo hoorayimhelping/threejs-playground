@@ -1,1 +1,202 @@
-sdf
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Yeah!</title>
+    <script type="text/javascript" src="three.js"></script>
+</head>
+<body>
+    <div id="container"></div>
+    <script type="x-shader/x-vertex" id="vertexShader">
+        uniform float time;
+
+        varying vec3 transformedNormal;
+        varying vec3 lighting;
+        varying vec4 vPosition;
+
+        void main() {
+            vPosition = modelViewMatrix * vec4(position, 1.0);
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+
+            transformedNormal = normalMatrix * normal;
+        }
+        
+    </script>
+    
+    <script type="x-shader/x-fragment" id="cubeFragmentShader">
+        uniform float time;
+
+        varying vec3 transformedNormal;
+        varying vec3 lighting;
+        varying vec4 vPosition;
+
+        void main() {
+            vec3 directionalVector = vec3(0.0, 5.0, 0.0);
+            vec3 lightDirection = normalize(directionalVector - vPosition.xyz);
+
+            vec3 lightColor = vec3(sin(time), cos(time), tan(time));//vec3(0.15, 0.9, 0.45);
+            vec3 ambientLight = vec3(0.16, 0.16, 0.16);
+
+            float directionalLightWeighting = max(dot(normalize(transformedNormal), lightDirection), 0.0);
+            vec3 lightWeighting = ambientLight + (lightColor * directionalLightWeighting);
+
+            vec4 fragmentColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+            gl_FragColor = vec4(fragmentColor.rgb * lightWeighting, fragmentColor.a);
+        }
+    
+    </script>
+    <script type="x-shader/x-fragment" id="sphereFragmentShader">
+        uniform float time;
+
+        varying vec3 transformedNormal;
+        varying vec3 lighting;
+        varying vec4 vPosition;
+
+        void main() {
+            vec3 directionalVector = vec3(0.0, 105.0, 0.0);
+            vec3 lightDirection = normalize(directionalVector - vPosition.xyz);
+            vec3 normal = normalize(transformedNormal);
+
+            vec3 directionalLightColor = vec3(0.80, 0.80, 0.0);
+            vec3 ambientLight = vec3(0.05, 0.05, 0.05);
+            float directionalLightWeighting = max(dot(normal, lightDirection), 0.0);
+
+            vec3 specularLightColor = directionalLightColor;
+            vec3 eyeDirection = normalize(-vPosition.xyz);
+            
+            vec3 reflectionDirection = reflect(-lightDirection, normal);
+            float specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), 20.0);
+
+            vec3 lightWeighting = ambientLight + 
+                (specularLightColor * specularLightWeighting) + 
+                (directionalLightColor * directionalLightWeighting);
+
+            vec4 fragmentColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+            gl_FragColor = vec4(fragmentColor.rgb * lightWeighting, fragmentColor.a);
+        }
+    
+    </script>
+    <script type="text/javascript" id="display-logic">
+        var WIDTH = 1000,
+            HEIGHT = 600;
+            VIEW_ANGLE = 45,
+            ASPECT_RATIO = WIDTH / HEIGHT,
+            NEAR = 0.1,
+            FAR = 10000;
+
+        var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT_RATIO, NEAR, FAR);
+        var scene = new THREE.Scene();
+
+        camera.position.z = 300;
+
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize(WIDTH, HEIGHT);
+
+        var crateTexture = THREE.ImageUtils.loadTexture('http://i.imgur.com/eH3YvZw.jpg');
+
+        var sphereMaterial = new THREE.MeshPhongMaterial({ color: 0x0000CC }),
+            cubeMaterial = new THREE.MeshPhongMaterial({map: crateTexture, color: 0xFFFFFF}),
+            uniforms = {
+              time: {
+                type: 'f', // a float
+                value: 0
+              }
+            },
+            shaderMaterial = new THREE.ShaderMaterial({
+                uniforms: uniforms,
+                vertexShader: document.getElementById('vertexShader').textContent,
+                fragmentShader: document.getElementById('cubeFragmentShader').textContent
+            }),
+            sphereShaderMaterial = new THREE.ShaderMaterial({
+                uniforms: uniforms,
+                vertexShader: document.getElementById('vertexShader').textContent,
+                fragmentShader: document.getElementById('sphereFragmentShader').textContent
+            });
+
+        var radius = 50,
+            segments = 46,
+            rings = 16,
+            sphere = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings), sphereShaderMaterial),
+            cube = new THREE.Mesh(new THREE.CubeGeometry(radius, radius, radius), cubeMaterial),
+            shadedCube = new THREE.Mesh(new THREE.CubeGeometry(radius, radius, radius), shaderMaterial);
+
+        sphere.position.set(50, 120, -150)
+        cube.position.set(-50, 0, 0);
+        cube.rotation.x = 2.0;
+
+        shadedCube.position.set(50, 0, 0);
+        shadedCube.rotation.x = 2.0;
+        shadedCube.rotation.y = 25.0;
+
+        var pointLight = new THREE.PointLight(0xFFFFFF);
+        pointLight.position.x = 10;
+        pointLight.position.y = 50;
+        pointLight.position.z = 130;
+
+        scene.add(pointLight);
+
+        var ambientLight = new THREE.AmbientLight(0x666666);
+        //scene.add(ambientLight);
+
+        var frame = 0,
+            moveablePointLight = new THREE.PointLight(0xFFFFFF);
+
+        //scene.add(new THREE.AmbientLight(0x0000CC));
+
+        var directionLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionLight.position.set(0, 1, 100);
+        scene.add(directionLight);
+
+        // var spotLight = new THREE.SpotLight(0xffffff);
+        // spotLight.position.set(100, 1000, 100);
+
+        // spotLight.castShadow = true;
+
+        // spotLight.shadowMapWidth = 1024;
+        // spotLight.shadowMapHeight = 1024;
+
+        // spotLight.shadowCameraNear = 500;
+        // spotLight.shadowCameraFar = 4000;
+        // spotLight.shadowCameraFov = 30;
+
+        // scene.add( spotLight );
+
+        renderer.setClearColor(0x000000);
+        var render = function() {
+            requestAnimationFrame(render);
+
+            scene.remove(sphere);
+            scene.remove(cube);
+            scene.remove(shadedCube);
+
+            // scene.remove(moveablePointLight);
+            
+            // moveablePointLight.position.x = frame;
+            // moveablePointLight.position.y = 50;
+            // moveablePointLight.position.z = 1530;
+
+            // scene.add(moveablePointLight);
+
+            cube.rotation.y -= 0.025;
+            sphere.rotation.x += 0.025;
+            shadedCube.rotation.x += 0.01;
+            shadedCube.rotation.z += 0.075;
+
+            scene.add(sphere);
+            scene.add(cube);
+            scene.add(shadedCube);
+            scene.add(camera);
+
+            renderer.render(scene, camera);
+
+            uniforms.time.value = frame / 100;
+
+            frame++;
+        };
+
+        render();
+        document.getElementById('container').appendChild(renderer.domElement);
+    </script>
+</body>
+</html>
