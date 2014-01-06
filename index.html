@@ -22,7 +22,7 @@
         
     </script>
     
-    <script type="x-shader/x-fragment" id="fragmentShader">
+    <script type="x-shader/x-fragment" id="cubeFragmentShader">
         uniform float time;
 
         varying vec3 transformedNormal;
@@ -42,8 +42,38 @@
             vec4 fragmentColor = vec4(1.0, 1.0, 1.0, 1.0);
 
             gl_FragColor = vec4(fragmentColor.rgb * lightWeighting, fragmentColor.a);
+        }
+    
+    </script>
+    <script type="x-shader/x-fragment" id="sphereFragmentShader">
+        uniform float time;
 
-            // gl_FragColor = vec4(lighting, 1.0);
+        varying vec3 transformedNormal;
+        varying vec3 lighting;
+        varying vec4 vPosition;
+
+        void main() {
+            vec3 directionalVector = vec3(0.0, 105.0, 0.0);
+            vec3 lightDirection = normalize(directionalVector - vPosition.xyz);
+            vec3 normal = normalize(transformedNormal);
+
+            vec3 directionalLightColor = vec3(0.80, 0.80, 0.0);
+            vec3 ambientLight = vec3(0.05, 0.05, 0.05);
+            float directionalLightWeighting = max(dot(normal, lightDirection), 0.0);
+
+            vec3 specularLightColor = directionalLightColor;
+            vec3 eyeDirection = normalize(-vPosition.xyz);
+            
+            vec3 reflectionDirection = reflect(-lightDirection, normal);
+            float specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), 20.0);
+
+            vec3 lightWeighting = ambientLight + 
+                (specularLightColor * specularLightWeighting) + 
+                (directionalLightColor * directionalLightWeighting);
+
+            vec4 fragmentColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+            gl_FragColor = vec4(fragmentColor.rgb * lightWeighting, fragmentColor.a);
         }
     
     </script>
@@ -76,17 +106,22 @@
             shaderMaterial = new THREE.ShaderMaterial({
                 uniforms: uniforms,
                 vertexShader: document.getElementById('vertexShader').textContent,
-                fragmentShader: document.getElementById('fragmentShader').textContent
+                fragmentShader: document.getElementById('cubeFragmentShader').textContent
+            }),
+            sphereShaderMaterial = new THREE.ShaderMaterial({
+                uniforms: uniforms,
+                vertexShader: document.getElementById('vertexShader').textContent,
+                fragmentShader: document.getElementById('sphereFragmentShader').textContent
             });
 
         var radius = 50,
-            segments = 16,
+            segments = 46,
             rings = 16,
-            sphere = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings), sphereMaterial),
+            sphere = new THREE.Mesh(new THREE.SphereGeometry(radius, segments, rings), sphereShaderMaterial),
             cube = new THREE.Mesh(new THREE.CubeGeometry(radius, radius, radius), cubeMaterial),
             shadedCube = new THREE.Mesh(new THREE.CubeGeometry(radius, radius, radius), shaderMaterial);
 
-        sphere.position.set(50, 0, 0)
+        sphere.position.set(50, 120, -150)
         cube.position.set(-50, 0, 0);
         cube.rotation.x = 2.0;
 
@@ -102,7 +137,7 @@
         scene.add(pointLight);
 
         var ambientLight = new THREE.AmbientLight(0x666666);
-        scene.add(ambientLight);
+        //scene.add(ambientLight);
 
         var frame = 0,
             moveablePointLight = new THREE.PointLight(0xFFFFFF);
@@ -131,7 +166,7 @@
         var render = function() {
             requestAnimationFrame(render);
 
-            //scene.remove(sphere);
+            scene.remove(sphere);
             scene.remove(cube);
             scene.remove(shadedCube);
 
@@ -148,7 +183,7 @@
             shadedCube.rotation.x += 0.01;
             shadedCube.rotation.z += 0.075;
 
-            //scene.add(sphere);
+            scene.add(sphere);
             scene.add(cube);
             scene.add(shadedCube);
             scene.add(camera);
