@@ -99,38 +99,46 @@
         // scene.add(ambientLight);
 
         var frame = 0
+            particles = [],
             geometry = new THREE.Geometry();
 
-        var assembleGeometry = function(geometry) {
+        var assembleGeometry = function() {
             for (var i = 0; i < PARTICLE_COUNT; i++) {
-                geometry.vertices.push(
-                    new THREE.Vector3(Math.random() * 500 - 250, Math.random() * 500 - 250, 00)
-                );
+                var particle = {
+                    position: new THREE.Vector3(Math.random() * 600 - 400, 120, Math.random() * 500 - 250),
+                    velocity: new THREE.Vector3(0, -Math.random() * 5, 0)
+                };
+                particles.push(particle);
+                geometry.vertices.push(particle.position);
             }
-            return geometry;
         };
+
+        assembleGeometry();
 
         var particleMaterial = new THREE.ParticleSystemMaterial({ 
                 color: '#339F23',
-                size: 10,
+                size: 2,
                 blending: THREE.AdditiveBlending,
                 transparent: true
             }),
-            geometry = assembleGeometry(geometry),
             particleSystem = new THREE.ParticleSystem(geometry, particleMaterial);
 
+        particleSystem.sortParticles = true;
         scene.add(particleSystem);
 
         var i = 0;
         var render = function() {
             requestAnimationFrame(render);
 
-            // particleSystem.rotation.y = frame / 90;
-            // particleSystem.rotation.z = frame / 500;
+            particleSystem.rotation.y = frame / 90;
+            particleSystem.rotation.z = frame / 500;
 
-            // for (i = 0; i < PARTICLE_COUNT; i++) {
-            //     geometry.vertices[i].y = frame / 10;
-            // }
+            for (i = 0; i < PARTICLE_COUNT; i++) {
+                if (geometry.vertices[i].y < -120) {
+                    geometry.vertices[i].y = 120;
+                }
+                geometry.vertices[i].y += particles[i].velocity.y;
+            }
 
             renderer.render(scene, camera);
 
