@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Particles!</title>
+    <script type="text/javascript" src="three.js"></script>
+</head>
+<body>
+    <div id="container"></div>
+    <script type="x-shader/x-vertex" id="vertexShader">
+        uniform float time;
+
+        varying vec3 transformedNormal;
+        varying vec3 lighting;
+        varying vec4 vPosition;
+
+        void main() {
+            vPosition = modelViewMatrix * vec4(position, 1.0);
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+
+            transformedNormal = normalMatrix * normal;
+        }
+        
+    </script>
+    
+    <script type="x-shader/x-fragment" id="cubeFragmentShader">
+        uniform float time;
+
+        varying vec3 transformedNormal;
+        varying vec3 lighting;
+        varying vec4 vPosition;
+
+        void main() {
+            vec3 directionalVector = vec3(0.0, 5.0, 0.0);
+            vec3 lightDirection = normalize(directionalVector - vPosition.xyz);
+
+            vec3 lightColor = vec3(sin(time), cos(time), tan(time));//vec3(0.15, 0.9, 0.45);
+            vec3 ambientLight = vec3(0.16, 0.16, 0.16);
+
+            float directionalLightWeighting = max(dot(normalize(transformedNormal), lightDirection), 0.0);
+            vec3 lightWeighting = ambientLight + (lightColor * directionalLightWeighting);
+
+            vec4 fragmentColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+            gl_FragColor = vec4(fragmentColor.rgb * lightWeighting, fragmentColor.a);
+        }
+    
+    </script>
+    <script type="x-shader/x-fragment" id="sphereFragmentShader">
+        uniform float time;
+
+        varying vec3 transformedNormal;
+        varying vec3 lighting;
+        varying vec4 vPosition;
+
+        void main() {
+            vec3 directionalVector = vec3(0.0, 105.0, 0.0);
+            vec3 lightDirection = normalize(directionalVector - vPosition.xyz);
+            vec3 normal = normalize(transformedNormal);
+
+            vec3 directionalLightColor = vec3(0.80, 0.80, 0.0);
+            vec3 ambientLight = vec3(0.05, 0.05, 0.05);
+            float directionalLightWeighting = max(dot(normal, lightDirection), 0.0);
+
+            vec3 specularLightColor = directionalLightColor;
+            vec3 eyeDirection = normalize(-vPosition.xyz);
+            
+            vec3 reflectionDirection = reflect(-lightDirection, normal);
+            float specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), 20.0);
+
+            vec3 lightWeighting = ambientLight + 
+                (specularLightColor * specularLightWeighting) + 
+                (directionalLightColor * directionalLightWeighting);
+
+            vec4 fragmentColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+            gl_FragColor = vec4(fragmentColor.rgb * lightWeighting, fragmentColor.a);
+        }
+    
+    </script>
+    <script type="text/javascript" id="display-logic">
+        var WIDTH = 1000,
+            HEIGHT = 600;
+            VIEW_ANGLE = 45,
+            ASPECT_RATIO = WIDTH / HEIGHT,
+            NEAR = 0.1,
+            FAR = 10000,
+            PARTICLE_COUNT = 20000;
+
+        var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT_RATIO, NEAR, FAR);
+        var scene = new THREE.Scene();
+
+        camera.position.z = 300;
+
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize(WIDTH, HEIGHT);
+        renderer.setClearColor(0x000000);
+
+        var ambientLight = new THREE.AmbientLight(0x666666);
+        scene.add(ambientLight);
+
+        var frame = 0
+            geometry = new THREE.Geometry();
+
+        var assembleGeometry = function(geometry) {
+            for (var i = 0; i < PARTICLE_COUNT; i++) {
+                geometry.vertices.push(
+                    new THREE.Vector3(Math.random() * 2000 - 1000, Math.random() * 2000 - 1000, 0)
+                );
+            }
+            return geometry;
+        };
+
+        var particleMaterial = new THREE.ParticleSystemMaterial({ color: '0x666666' }),
+            geometry = assembleGeometry(geometry),
+            particleSystem = new THREE.ParticleSystem(geometry, particleSystem);
+
+        console.log(geometry);
+
+        scene.add(particleSystem);
+
+        var render = function() {
+            requestAnimationFrame(render);
+
+            renderer.render(scene, camera);
+
+            frame++;
+        };
+
+        render();
+        document.getElementById('container').appendChild(renderer.domElement);
+    </script>
+</body>
+</html>
