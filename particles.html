@@ -84,7 +84,7 @@
             ASPECT_RATIO = WIDTH / HEIGHT,
             NEAR = 0.1,
             FAR = 10000,
-            PARTICLE_COUNT = 20000;
+            PARTICLE_COUNT = 3000;
 
         var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT_RATIO, NEAR, FAR);
         var scene = new THREE.Scene();
@@ -116,7 +116,7 @@
         assembleGeometry();
 
         var particleMaterial = new THREE.ParticleSystemMaterial({ 
-                color: '#339F23',
+                color: '#FFF',
                 size: 2,
                 blending: THREE.AdditiveBlending,
                 transparent: true
