@@ -84,10 +84,12 @@
             ASPECT_RATIO = WIDTH / HEIGHT,
             NEAR = 0.1,
             FAR = 10000,
-            PARTICLE_COUNT = 3000;
+            PARTICLE_COUNT = 3000
+            snowflakePath = 'http://i.imgur.com/RWYYhkR.png';
 
         var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT_RATIO, NEAR, FAR);
         var scene = new THREE.Scene();
+        var snowflakeTexture = THREE.ImageUtils.loadTexture(snowflakePath);
 
         camera.position.z = 300;
 
@@ -117,6 +119,7 @@
 
         var particleMaterial = new THREE.ParticleSystemMaterial({ 
                 color: '#FFF',
+                map: snowflakeTexture,
                 size: 2,
                 blending: THREE.AdditiveBlending,
                 transparent: true
