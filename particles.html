@@ -95,8 +95,8 @@
         renderer.setSize(WIDTH, HEIGHT);
         renderer.setClearColor(0x000000);
 
-        var ambientLight = new THREE.AmbientLight(0x666666);
-        scene.add(ambientLight);
+        // var ambientLight = new THREE.AmbientLight(0x666666);
+        // scene.add(ambientLight);
 
         var frame = 0
             geometry = new THREE.Geometry();
@@ -104,22 +104,33 @@
         var assembleGeometry = function(geometry) {
             for (var i = 0; i < PARTICLE_COUNT; i++) {
                 geometry.vertices.push(
-                    new THREE.Vector3(Math.random() * 2000 - 1000, Math.random() * 2000 - 1000, 0)
+                    new THREE.Vector3(Math.random() * 500 - 250, Math.random() * 500 - 250, 00)
                 );
             }
             return geometry;
         };
 
-        var particleMaterial = new THREE.ParticleSystemMaterial({ color: '0x666666' }),
+        var particleMaterial = new THREE.ParticleSystemMaterial({ 
+                color: '#339F23',
+                size: 10,
+                blending: THREE.AdditiveBlending,
+                transparent: true
+            }),
             geometry = assembleGeometry(geometry),
-            particleSystem = new THREE.ParticleSystem(geometry, particleSystem);
-
-        console.log(geometry);
+            particleSystem = new THREE.ParticleSystem(geometry, particleMaterial);
 
         scene.add(particleSystem);
 
+        var i = 0;
         var render = function() {
             requestAnimationFrame(render);
+
+            // particleSystem.rotation.y = frame / 90;
+            // particleSystem.rotation.z = frame / 500;
+
+            // for (i = 0; i < PARTICLE_COUNT; i++) {
+            //     geometry.vertices[i].y = frame / 10;
+            // }
 
             renderer.render(scene, camera);
 
