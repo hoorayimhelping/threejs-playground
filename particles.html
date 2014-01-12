@@ -148,6 +148,7 @@
                 if (geometry.vertices[i].y > 120 || geometry.vertices[i].y < -120) {
                     geometry.vertices[i].y = -120;
                     particles[i].velocity.y = Math.randomRange(1, 3);
+                    geometry.vertices[i].x = Math.randomRange(-30,30);
                 }
                 if (geometry.vertices[i].x > 200 || geometry.vertices[i].x < -200) {
                     geometry.vertices[i].x = Math.randomRange(-30,30);
