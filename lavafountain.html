@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Particles!</title>
+    <title>Lava!</title>
     <script type="text/javascript" src="three.js"></script>
 </head>
 <body>
@@ -125,7 +125,7 @@
                 };
                 particles.push(particle);
                 var x = Math.randomRange(-15,15); 
-                geometry.vertices.push(new THREE.Vector3(x, -140, 0));
+                geometry.vertices.push(new THREE.Vector3(x, -140, Math.randomRange(-80, 80)));
             }
         };
 
@@ -153,7 +153,7 @@
             requestAnimationFrame(render);
 
             // particleSystem.rotation.y = frame / 90;
-            //particleSystem.rotation.z = frame / 500;
+            // particleSystem.rotation.z = frame / 500;
 
             // particleMaterial.color.setRGB(i * Math.random(),i,i);
             for (i = 0; i < PARTICLE_COUNT; i++) {
