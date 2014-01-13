@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Particles!</title>
+    <script type="text/javascript" src="three.js"></script>
+</head>
+<body>
+    <div id="container"></div>
+    <script type="x-shader/x-vertex" id="vertexShader">
+        uniform float time;
+
+        varying vec3 transformedNormal;
+        varying vec3 lighting;
+        varying vec4 vPosition;
+
+        void main() {
+            vPosition = modelViewMatrix * vec4(position, 1.0);
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+
+            transformedNormal = normalMatrix * normal;
+        }
+        
+    </script>
+    
+    <script type="x-shader/x-fragment" id="cubeFragmentShader">
+        uniform float time;
+
+        varying vec3 transformedNormal;
+        varying vec3 lighting;
+        varying vec4 vPosition;
+
+        void main() {
+            vec3 directionalVector = vec3(0.0, 5.0, 0.0);
+            vec3 lightDirection = normalize(directionalVector - vPosition.xyz);
+
+            vec3 lightColor = vec3(sin(time), cos(time), tan(time));//vec3(0.15, 0.9, 0.45);
+            vec3 ambientLight = vec3(0.16, 0.16, 0.16);
+
+            float directionalLightWeighting = max(dot(normalize(transformedNormal), lightDirection), 0.0);
+            vec3 lightWeighting = ambientLight + (lightColor * directionalLightWeighting);
+
+            vec4 fragmentColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+            gl_FragColor = vec4(fragmentColor.rgb * lightWeighting, fragmentColor.a);
+        }
+    
+    </script>
+    <script type="x-shader/x-fragment" id="sphereFragmentShader">
+        uniform float time;
+
+        varying vec3 transformedNormal;
+        varying vec3 lighting;
+        varying vec4 vPosition;
+
+        void main() {
+            vec3 directionalVector = vec3(0.0, 105.0, 0.0);
+            vec3 lightDirection = normalize(directionalVector - vPosition.xyz);
+            vec3 normal = normalize(transformedNormal);
+
+            vec3 directionalLightColor = vec3(0.80, 0.80, 0.0);
+            vec3 ambientLight = vec3(0.05, 0.05, 0.05);
+            float directionalLightWeighting = max(dot(normal, lightDirection), 0.0);
+
+            vec3 specularLightColor = directionalLightColor;
+            vec3 eyeDirection = normalize(-vPosition.xyz);
+            
+            vec3 reflectionDirection = reflect(-lightDirection, normal);
+            float specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), 20.0);
+
+            vec3 lightWeighting = ambientLight + 
+                (specularLightColor * specularLightWeighting) + 
+                (directionalLightColor * directionalLightWeighting);
+
+            vec4 fragmentColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+            gl_FragColor = vec4(fragmentColor.rgb * lightWeighting, fragmentColor.a);
+        }
+    
+    </script>
+    <script type="text/javascript" id="display-logic">
+        Math.randomRange = function (min, max) {
+            return Math.random() * (max - min) + min;
+        };
+
+        var WIDTH = 1000,
+            HEIGHT = 600;
+            VIEW_ANGLE = 45,
+            ASPECT_RATIO = WIDTH / HEIGHT,
+            NEAR = 0.1,
+            FAR = 10000,
+            PARTICLE_COUNT = 3000;
+
+        var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT_RATIO, NEAR, FAR);
+        var scene = new THREE.Scene();
+
+        camera.position.z = 300;
+
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize(WIDTH, HEIGHT);
+        renderer.setClearColor(0x000000);
+
+        // var ambientLight = new THREE.AmbientLight(0x666666);
+        // scene.add(ambientLight);
+
+        var frame = 0
+            particles = [],
+            geometry = new THREE.Geometry()
+            randomPosition = new THREE.Vector3(Math.random() * 600 - 400, Math.random() * 300 - 150, Math.random() * 500 - 250);
+
+        var resetParticleAt = function(i) {
+            geometry.vertices[i].y = -140;
+            geometry.vertices[i].x = Math.randomRange(-15, 15);
+
+            particles[i].velocity.x = Math.randomRange(-0.05, 0.05);
+            particles[i].velocity.y = Math.randomRange(1, 4);
+        };
+
+        var assembleGeometry = function() {
+            for (var i = 0; i < PARTICLE_COUNT; i++) {
+                var particle = {
+                    velocity: 
+                        new THREE.Vector3(Math.randomRange(-0.05, 0.05), Math.randomRange(1, 1.55), 0),
+                    acceleration:
+                        new THREE.Vector3(Math.randomRange(-0.013, 0.013), Math.randomRange(-0.005, 0.05), 0)
+                };
+                particles.push(particle);
+                var x = Math.randomRange(-15,15); 
+                geometry.vertices.push(new THREE.Vector3(x, -140, 0));
+            }
+        };
+
+        assembleGeometry();
+
+        var particleMaterial = new THREE.ParticleSystemMaterial({ 
+                color: '#DF3A01',
+                map: THREE.ImageUtils.loadTexture('http://i.imgur.com/kpt5qxG.png'),
+                size: 20,
+                blending: THREE.AdditiveBlending,
+                transparent: true
+            }),
+            particleSystem = new THREE.ParticleSystem(geometry, particleMaterial);
+
+        particleSystem.sortParticles = true;
+        scene.add(particleSystem);
+
+        var gravity = new THREE.Vector3(0, -0.06, 0);
+
+        var clock = new THREE.Clock(true),
+            i = 0;
+            clock.getDelta(),
+            startTime = new Date().getTime();
+        var render = function() {
+            requestAnimationFrame(render);
+
+            // particleSystem.rotation.y = frame / 90;
+            //particleSystem.rotation.z = frame / 500;
+
+            // particleMaterial.color.setRGB(i * Math.random(),i,i);
+            for (i = 0; i < PARTICLE_COUNT; i++) {
+                if (geometry.vertices[i].y > 145 || geometry.vertices[i].y < -140) {
+                    resetParticleAt(i);
+                }
+                if (geometry.vertices[i].x > 200 || geometry.vertices[i].x < -200) {
+                    resetParticleAt(i);
+                }
+
+                var particle = particles[i],
+                    delta = clock.getDelta();
+                particle.velocity.add(particle.acceleration);
+                particle.velocity.add(gravity);
+
+                // geometry.vertices[i].add((particle.velocity.multiplyScalar(delta)));
+                geometry.vertices[i].add(particle.velocity);
+
+                // if (i === 60) console.log((particle.velocity.multiplyScalar(delta)) + (.5 * particle.acceleration.multiplyScalar(delta * delta)));
+
+                // geometry.vertices[i].x = Math.random() * (i - 100) * ((Math.round(Math.random())) % 2 === 0 ? 1 : -1);
+                // geometry.vertices[i].y += particles[i].velocity.y;
+            }
+
+            renderer.render(scene, camera);
+            if (i > 256) {
+                i = 0;
+            }
+
+            i++;
+            frame++;
+        };
+
+        render();
+        document.getElementById('container').appendChild(renderer.domElement);
+    </script>
+</body>
+</html>
