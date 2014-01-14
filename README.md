@@ -1,2 +1,5 @@
-[Demo here](http://hoorayimhelping.github.io/threejs-playground/)
-[Particles](http://hoorayimhelping.github.io/threejs-playground/particles)
+[Basic three.js here](http://hoorayimhelping.github.io/threejs-playground/)
+
+[Lava Fountain](http://hoorayimhelping.github.io/threejs-playground/lavafountain)
+
+[Snowfall](http://hoorayimhelping.github.io/threejs-playground/snowfall)

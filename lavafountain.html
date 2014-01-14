@@ -133,10 +133,11 @@
 
         var particleMaterial = new THREE.ParticleSystemMaterial({ 
                 color: '#DF3A01',
-                map: THREE.ImageUtils.loadTexture('http://i.imgur.com/kpt5qxG.png'),
-                size: 20,
+                map: THREE.ImageUtils.loadTexture('http://i.imgur.com/IZXm8UR.png'),
+                size: 42,
                 blending: THREE.AdditiveBlending,
-                transparent: true
+                transparent: true,
+                opacity: 1.0
             }),
             particleSystem = new THREE.ParticleSystem(geometry, particleMaterial);
 
