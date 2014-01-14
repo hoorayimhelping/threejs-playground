@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Yeah!</title>
+    <script type="text/javascript" src="three.js"></script>
+</head>
+<body>
+    <div id="container"></div>
+    <script type="text/javascript" id="display-logic">
+        var WIDTH = 1000,
+            HEIGHT = 600;
+            VIEW_ANGLE = 45,
+            ASPECT_RATIO = WIDTH / HEIGHT,
+            NEAR = 0.1,
+            FAR = 10000;
+
+        var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT_RATIO, NEAR, FAR);
+        var scene = new THREE.Scene();
+
+        //camera.position.z = 500;
+        // camera.position.y = 400;
+        camera.position.set(0, -400, 500);
+        camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+        var floor = new THREE.Mesh(
+            new THREE.PlaneGeometry(3000, 3000, 100, 100),
+            new THREE.MeshBasicMaterial({color: '#139', wireframe: false})
+        );
+
+        floor.position.set(0, 0, 0);
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        var crateTexture = THREE.ImageUtils.loadTexture('http://i.imgur.com/eH3YvZw.jpg');
+        var crateMaterial = new THREE.MeshPhongMaterial({map: crateTexture, color: 0xFFFFFF});
+        var crate = new THREE.Mesh(new THREE.CubeGeometry(50, 50, 50), crateMaterial);
+
+        crate.receiveShadow = true;
+        crate.castShadow = true;
+        crate.position.set(0, 0, 150);
+        scene.add(crate);
+
+        var crate2 = new THREE.Mesh(new THREE.CubeGeometry(15, 15, 15), crateMaterial);
+        crate2.receiveShadow = true;
+        crate2.castShadow = true;
+        crate2.position.set(0, 0, 200);
+        scene.add(crate2);
+
+        var spotLight = new THREE.SpotLight('#222');
+        spotLight.position.set(0, 0, 400);
+
+        spotLight.castShadow = true;
+        spotLight.shadowDarkness = 0.35;
+        spotLight.intensity = 10;
+        spotLight.castShadow = true;
+
+        scene.add(spotLight);
+
+        var sphere = new THREE.Mesh(
+            new THREE.SphereGeometry(30, 46, 16),
+            new THREE.MeshBasicMaterial({color: '#913', wireframe: true})
+        );
+
+        sphere.position = spotLight.position;
+        scene.add(sphere);
+
+        var ambientLight = new THREE.AmbientLight('#444');
+        scene.add(ambientLight);
+
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize(WIDTH, HEIGHT);
+        renderer.setClearColor('#000');
+        renderer.shadowMapEnabled = true;
+        renderer.shadowMapSoft = true;
+
+        var frame = 0;
+        var render = function() {
+            requestAnimationFrame(render);
+
+            scene.remove(crate);
+
+            crate.rotation.z -= 0.025;
+            crate2.rotation.z += 0.075;
+            crate2.rotation.y += 0.075;
+
+            scene.add(crate);
+            scene.add(camera);
+
+            renderer.render(scene, camera);
+        };
+
+        render();
+        document.getElementById('container').appendChild(renderer.domElement);
+    </script>
+</body>
+</html>
